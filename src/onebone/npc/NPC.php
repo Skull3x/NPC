@@ -45,7 +45,6 @@ class NPC extends Location{
 
 	public function __construct(Location $loc, $name, $skin, $skinId, Item $item, $command = "", $message = ""){
 		parent::__construct($loc->x, $loc->y, $loc->z, $loc->yaw, $loc->pitch, $loc->level);
-
 		$this->eid = Entity::$entityCount++;
 		$this->skin = $skin;
 		$this->skinId = $skinId;
@@ -53,7 +52,6 @@ class NPC extends Location{
 		$this->item = $item;
 		$this->message = $message;
 		$this->command = $command;
-
 		$this->uuid = UUID::fromRandom();
 	}
 
@@ -113,7 +111,6 @@ class NPC extends Location{
 		}
 		if($this->pitch === -1 and $target !== null){
 			$ydiff = $target->y - $this->y;
-
 			$vec = new Vector2($this->x, $this->z);
 			$dist = $vec->distance($target->x, $target->z);
 			$angle = atan2($dist, $ydiff);
@@ -125,8 +122,7 @@ class NPC extends Location{
 		$pk->y = $this->y + 1.62;
 		$pk->z = $this->z;
 		$pk->bodyYaw = $pk->yaw;
-		$pk->onGruond = 0;
-
+		$pk->onGround = 0;
 		$target->dataPacket($pk);
 	}
 
@@ -185,9 +181,7 @@ class NPC extends Location{
 		$pk = new RemoveEntityPacket();
 		$pk->clientId = $this->uuid;
 		$pk->eid = $this->eid;
-
 		$player->dataPacket($pk);
-
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_REMOVE;
 		$pk->entries = [
@@ -214,7 +208,6 @@ class NPC extends Location{
 
 	public static function createNPC($data){
 		Server::getInstance()->loadLevel($data[3]);
-
 		return new NPC(new Location($data[0], $data[1], $data[2], $data[4], $data[5], Server::getInstance()->getLevelByName($data[3])), $data[9], $data[6], $data[10], Item::get($data[7], $data[8]), $data[11]);
 	}
 }
