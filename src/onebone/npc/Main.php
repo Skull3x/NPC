@@ -34,7 +34,7 @@ use pocketmine\network\protocol\InteractPacket;
 use pocketmine\Player;
 
 class Main extends PluginBase implements Listener{
-	private $npc, $msgQueue;
+	private $npc, $msgQueue, $cmdQueue;
 
 	public function onEnable(){
 		if(!file_exists($this->getDataFolder())){
