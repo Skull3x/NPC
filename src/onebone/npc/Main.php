@@ -65,15 +65,24 @@ class Main extends PluginBase implements Listener{
 		$pk = $event->getPacket();
 		if($pk instanceof InteractPacket){
 			if(isset($this->npc[$pk->target])){
-				if(isset($this->msgQueue[$event->getPlayer()->getName()])){
+				if(isset($this->cmdQueue[$event->getPlayer()->getName()])){
 					$npc = $this->npc[$pk->target];
-					$npc->setMessage($this->msgQueue[$event->getPlayer()->getName()]);
-					unset($this->msgQueue[$event->getPlayer()->getName()]);
-					$event->getPlayer()->sendMessage("You have set NPC ".TextFormat::AQUA.$npc->getName().TextFormat::WHITE." to say ".TextFormat::GREEN.$npc->getMessage());
+					$npc->setCommand($this->msgQueue[$event->getPlayer()->getName()]);
+					unset($this->cmdQueue[$event->getPlayer()->getName()]);
+					$event->getPlayer()->sendMessage("You have set NPC ".TextFormat::YELLOE.$npc->getName().TextFormat::WHITE." to run the command ".TextFormat::GOLD.$npc->getCommand());
 					return;
 				}else{
 					$this->npc[$pk->target]->onInteract($event->getPlayer());
 				}
+			}
+			if(isset($this->msgQueue[$event->getPlayer()->getName()])){
+				$npc = $this->npc[$pk->target];
+				$npc->setMessage($this->msgQueue[$event->getPlayer()->getName()]);
+				unset($this->msgQueue[$event->getPlayer()->getName()]);
+				$event->getPlayer()->sendMessage("You have set NPC ".TextFormat::AQUA.$npc->getName().TextFormat::WHITE." to say ".TextFormat::GREEN.$npc->getMessage());
+				return;
+			}else{
+				$this->npc[$pk->target]->onInteract($event->getPlayer());
 			}
 		}
 	}
@@ -122,20 +131,17 @@ class Main extends PluginBase implements Listener{
 					$sender->sendMessage(TextFormat::RED."You don't have permission to use this command.");
 					return true;
 				}
-
 				$name = implode(" ", $params);
 				if(trim($name) === ""){
 					$sender->sendMessage(TextFormat::RED."Usage: /npc create <name>");
 					return true;
 				}
 				$location = new Location($sender->getX(), $sender->getY(), $sender->getZ(), -1, -1, $sender->getLevel());
-
 				$npc = new NPC(clone $location, $name, $sender->getSkinData(), $sender->getSkinId(), $sender->getInventory()->getItemInHand());
 				$this->npc[$npc->getId()] = $npc;
 				foreach($sender->getLevel()->getPlayers() as $player){
 					$npc->spawnTo($player);
 				}
-
 				if($this->getConfig()->get("save-on-change")){
 					$this->save();
 				}
@@ -146,13 +152,11 @@ class Main extends PluginBase implements Listener{
 					$sender->sendMessage(TextFormat::RED."You don't have permission to use this command.");
 					return true;
 				}
-
 				$id = array_shift($params);
 				if(!is_numeric($id)){
 					$sender->sendMessage(TextFormat::RED."Usage: /npc remove <id>");
 					return true;
 				}
-
 				foreach($this->npc as $key => $npc){
 					if($id == $npc->getId()){
 						$npc->remove();
@@ -173,21 +177,17 @@ class Main extends PluginBase implements Listener{
 					$sender->sendMessage(TextFormat::RED."You don't have permission to use this command.");
 					return true;
 				}
-
 				$page = array_shift($params);
 				if(!is_numeric($page)){
 					$page = 1;
 				}
-
 				$max = ceil(count($this->npc)/5);
 				$page = (int)$page;
 				$page = max(1, min($page, $max));
-
 				$output = "Showing NPC list (page $page/$max): \n";
 				$n = 0;
 				foreach($this->npc as $id => $npc){
 					$current = (int)ceil(++$n / 5);
-
 					if($current === $page){
 						$output .= "#".$npc->getId()
 						." (".round($npc->x, 2).":".round($npc->y, 2).":".round($npc->z, 2).":".$npc->getLevel()->getName()."): "
@@ -204,12 +204,22 @@ class Main extends PluginBase implements Listener{
 					$sender->sendMessage(TextFormat::RED."You don't have permission to use this command.");
 					return true;
 				}
-
 				$message = trim(implode(" ", $params));
-
 				$this->msgQueue[$sender->getName()] = $message;
-
 				$sender->sendMessage("Touch NPC you want to set message.");
+				if($this->getConfig()->get("save-on-change")){
+					$this->save();
+				}
+				case "command":
+				case "cmd":
+				case "c":
+				if(!$sender->hasPermission("npc.command.npc.cmd")){
+					$sender->sendMessage(TextFormat::RED."You don't have permission to use this command.");
+					return true;
+				}
+				$command = trim(implode(" ", $params));
+				$this->cmdQueue[$sender->getName()] = $command;
+				$sender->sendMessage("Touch NPC you want to set command.");
 				if($this->getConfig()->get("save-on-change")){
 					$this->save();
 				}
