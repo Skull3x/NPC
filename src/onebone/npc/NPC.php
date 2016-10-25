@@ -34,15 +34,16 @@ use pocketmine\utils\TextFormat;
 use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\math\Vector2;
+use pocketmine\command\ConsoleCommandSender;
 
 class NPC extends Location{
 	private $eid;
 	private $skin, $skinId, $name;
-	private $item, $message;
+	private $item, $message, $command;
 
 	private $uuid;
 
-	public function __construct(Location $loc, $name, $skin, $skinId, Item $item, $message = ""){
+	public function __construct(Location $loc, $name, $skin, $skinId, Item $item, $command = "", $message = ""){
 		parent::__construct($loc->x, $loc->y, $loc->z, $loc->yaw, $loc->pitch, $loc->level);
 
 		$this->eid = Entity::$entityCount++;
@@ -51,6 +52,7 @@ class NPC extends Location{
 		$this->name = $name;
 		$this->item = $item;
 		$this->message = $message;
+		$this->command = $command;
 
 		$this->uuid = UUID::fromRandom();
 	}
@@ -65,6 +67,14 @@ class NPC extends Location{
 
 	public function getMessage(){
 		return $this->message;
+	}
+	
+	public function setCommand($cmd){
+		$this->command = $cmd;
+	}
+
+	public function getCommand(){
+		return $this->command;
 	}
 
 	public function getSkin(){
@@ -83,6 +93,10 @@ class NPC extends Location{
 	public function onInteract(Player $player){
 		if($this->message !== ""){
 			$player->sendMessage($this->message);
+		}
+		if($this->command !== ""){
+			$cmd = str_replace("{player}", $player->getName(), $this->command);
+			$this->server->dispatchCommand(new ConsoleCommandSender(), $cmd);
 		}
 	}
 
