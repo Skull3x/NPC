@@ -25,9 +25,11 @@ permissions:
         description: Allows player to use /npc list
        npc.command.npc.message:
         description: Allows player to use /npc message
+       npc.command.npc.cmd:
+        description: Allows player to use /npc command
 
 commands:
  npc:
   description: NPC master command
-  usage: /npc <create|remove|list|message>
+  usage: /npc <create|remove|list|message|command>
   permission: npc.command.npc
